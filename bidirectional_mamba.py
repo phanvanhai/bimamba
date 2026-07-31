@@ -119,9 +119,9 @@ def create_block(
     mixer_cls = partial(
         Mamba,
         layer_idx=layer_idx,
-        bimamba_type=bimamba_type,
-        if_divide_out=if_divide_out,
-        init_layer_scale=init_layer_scale,
+        # bimamba_type=bimamba_type,
+        # if_divide_out=if_divide_out,
+        # init_layer_scale=init_layer_scale,
         **ssm_cfg,
         **factory_kwargs
     )
