@@ -8,8 +8,8 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 import torch.nn.functional as F
-from timm.models.layers import trunc_normal_
-from timm.models.layers import DropPath
+from timm.layers import trunc_normal_
+from timm.layers import DropPath
 from functools import partial
 from typing import Optional
 from mamba_ssm.modules.mamba_simple import Mamba

@@ -69,14 +69,14 @@ def main(args):
 
     # 创建 DataLoader
     if args.dataset == 'NTU-Fi-HumanID':
-        train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True, num_workers=32)
-        test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False, num_workers=32)
+        train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True, num_workers=4)
+        test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False, num_workers=4)
     elif args.dataset == 'NTU-Fi_HAR':
-        train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True, num_workers=32)
-        test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False, num_workers=32)
+        train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True, num_workers=4)
+        test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False, num_workers=4)
     else:
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size=128, shuffle=True, drop_last=True, num_workers=32)
-        test_loader = torch.utils.data.DataLoader(test_set, batch_size=128, shuffle=False, num_workers=32)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=128, shuffle=True, drop_last=True, num_workers=4)
+        test_loader = torch.utils.data.DataLoader(test_set, batch_size=128, shuffle=False, num_workers=4)
 
     # 实例化融合模型
     fusion_model = FusionModel(depth=depth, embed_dim=embed_dim, channels=channels,
