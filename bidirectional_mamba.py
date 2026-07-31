@@ -170,13 +170,13 @@ class Bidirectional_Mamba(nn.Module):
                  **kwargs):                       #为了保证模型的可扩展性所以加一个**kwargs
         factory_kwargs = {"device": device, "dtype": dtype}
         kwargs.update(factory_kwargs)
-        super(VisionMamba,self).__init__()
+        super(Bidirectional_Mamba,self).__init__()
         self.residual_in_fp32 = residual_in_fp32
         self.fused_add_norm = fused_add_norm
         self.if_bidirectional = if_bidirectional
         self.final_pool_type = final_pool_type
         self.if_abs_pos_embed = if_abs_pos_embed
-        self.if_rope_residual = if_rope_residual
+        self.if_rope_residuals = if_rope_residual
         self.flip_img_sequences_ratio = flip_img_sequences_ratio
         self.if_rope = if_rope
         self.if_cls_token = if_cls_token
