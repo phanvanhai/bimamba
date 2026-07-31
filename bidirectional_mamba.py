@@ -369,7 +369,7 @@ class Bidirectional_Mamba(nn.Module):
         return x
 # 给出各个参数定义
 class FusionModel(nn.Module):
-    def __init__(self, depth, embed_dim, channels, num_classes, in_channels, out_channels, kernel_size):
+    def __init__(self, depth, embed_dim, channels, num_classes, in_channels, out_channels, kernel_size, groups):
         super(FusionModel, self).__init__()
         
         self.Bimodel = Bidirectional_Mamba(
