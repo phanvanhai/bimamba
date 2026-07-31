@@ -81,7 +81,7 @@ def main(args):
     # 实例化融合模型
     fusion_model = FusionModel(depth=depth, embed_dim=embed_dim, channels=channels,
                                num_classes=num_classes, in_channels=in_channels,
-                               out_channels=out_channels, kernel_size=kernel_size, Group = Group).to(device)
+                               out_channels=out_channels, kernel_size=kernel_size, Group = groups).to(device)
     criterion = nn.CrossEntropyLoss()
 
     # 训练和测试
