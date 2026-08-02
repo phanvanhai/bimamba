@@ -126,9 +126,9 @@ class XRF55Dataset(Dataset):
         filename, label = self.samples[idx]
         x = np.load(self.data_dir + '/' + filename + '.npy').astype(np.float32)
 
-        # (3,114,500)
+        # (3,90,1000)
         # ->
-        # (342,500)
+        # (270,1000)
         x = x.reshape(-1, x.shape[-1])
         if self.mean is not None and self.std is not None:
             x = (x - self.mean) / (self.std + 1e-8)
@@ -137,7 +137,7 @@ class XRF55Dataset(Dataset):
 
         # -----------------------------
         # Adaptive temporal pooling
-        # 500 -> 250
+        # 1000 -> 250
         # -----------------------------
         x = F.adaptive_max_pool1d(
             x,
