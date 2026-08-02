@@ -41,8 +41,18 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
             outputs = outputs.to(device)
             outputs = outputs.type(torch.FloatTensor)
             loss = criterion(outputs, labels)
+
+            if torch.isnan(loss):
+                print(f"NaN at epoch {epoch+1}")
+                break
+            
             loss.backward()
             optimizer.step()
+
+            for name, p in model.named_parameters():
+                if torch.isnan(p).any():
+                    print("NaN weight:", name)
+                    break
 
             epoch_loss += loss.item() * inputs.size(0)
             predict_y = torch.argmax(outputs, dim=1).to(device)
@@ -70,12 +80,6 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
                 labels = labels.type(torch.LongTensor)
 
                 outputs = model(inputs)
-
-                print(torch.isnan(outputs).any())
-                print(outputs.min().item())
-                print(outputs.max().item())
-                exit()
-
                 outputs = outputs.to(device)
                 outputs = outputs.type(torch.FloatTensor)
                 loss = criterion(outputs, labels)
