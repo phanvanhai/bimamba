@@ -100,7 +100,7 @@ def main(args):
             std=std,
         )
 
-        depth = 8
+        depth = 2
         channels = 1000
         kernel_size = 5
 
