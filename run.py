@@ -56,8 +56,7 @@ def main(args):
         kernel_size = 5
         groups = 3
     elif args.dataset == 'XRF55':
-        train_root_dir = '/kaggle/input/datasets/phanvanhai/xrf55-s1-bd/XRF_dataset'
-        test_root_dir = '/kaggle/input/datasets/phanvanhai/xrf55-s1-bd/XRF_dataset'
+        root_dir = '/kaggle/input/datasets/phanvanhai/xrf55-s1-bd/XRF_dataset'
 
         mean, std = compute_xrf55_statistics(
             file_path=root_dir,
@@ -65,13 +64,13 @@ def main(args):
         )
 
         train_dataset = XRF55Dataset(
-            root_dir=train_root_dir,
+            root_dir=root_dir,
             split='train',
             mean=mean,
             std=std,
         )
         test_dataset = XRF55Dataset(
-            root_dir=test_root_dir,
+            root_dir=root_dir,
             split='test',
             mean=mean,
             std=std,
