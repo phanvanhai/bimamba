@@ -4,6 +4,7 @@ import glob
 import scipy.io as sio
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
+import os
 
 def UT_HAR_dataset(root_dir):
     data_list = glob.glob(root_dir + '/UT_HAR/data/*.csv')
@@ -49,4 +50,179 @@ class NTU_HAR_Dataset(Dataset):
         if self.transform:
             x = self.transform(x)
         x = torch.FloatTensor(x)
+        return x, y
+
+class XRF55Dataset(Dataset):
+    def __init__(self, root_dir, split='train'):
+        self.root_dir = root_dir
+        self.split = split
+        if split == 'train':
+            self.data_dir = root_dir + '/train_data'
+            self.label_file = root_dir + '/dml_train.txt'
+        else:
+            self.data_dir = root_dir + '/test_data'
+            self.label_file = root_dir + '/dml_test.txt'
+        self.samples = []
+
+        with open(self.label_file, 'r') as f:
+            for line in f:
+                filename, subject, activity = line.strip().split(',')
+                self.samples.append((
+                    filename,
+                    int(activity) - 31
+                ))
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        filename, label = self.samples[idx]
+        x = np.load(self.data_dir + '/' + filename + '.npy')
+
+        # (3,114,500)
+        # ->
+        # (342,500)
+        x = x.reshape(-1, x.shape[-1])
+        x = torch.FloatTensor(x)
+
+        return x, label
+
+class SSHARDataset(Dataset):
+    def __init__(
+        self,
+        root_dir,
+        device='esp',
+        signal='amp',
+        split='train',
+    ):
+        self.root_dir = root_dir
+        self.device = device
+        self.signal = signal
+        self.split = split
+        self.rooms = [
+            'room_02'
+        ]
+        self.subjects = [
+            'subject_01',
+            'subject_02',
+            'subject_03',
+            'subject_04',
+            'subject_09',
+            'subject_10',
+            'subject_11',
+            'subject_12',
+            'subject_13',
+            'subject_14',
+        ]
+        self.rx_list = [
+            'rx_00',
+            'rx_01',
+            'rx_02',
+        ]
+        self.samples = []
+        self.build_index()
+
+    def build_index(self):
+        import re
+        pattern = re.compile(
+            r'act(\d+)_pos(\d+)_dir(\d+)_rep(\d+)'
+        )
+        for room in self.rooms:
+            for subject in self.subjects:
+                folder = os.path.join(
+                    self.root_dir,
+                    room,
+                    self.device,
+                    self.rx_list[0],
+                    subject
+                )
+
+                if not os.path.exists(folder):
+                    continue
+
+                for file in os.listdir(folder):
+
+                    if not file.startswith(self.signal):
+                        continue
+
+                    m = pattern.search(file)
+
+                    if m is None:
+                        continue
+
+                    act = int(m.group(1))
+                    pos = int(m.group(2))
+                    direction = int(m.group(3))
+                    rep = int(m.group(4))
+
+                    train = False
+
+                    if direction == 0:
+                        train = rep <= 8
+                    else:
+                        train = rep <= 4
+
+                    if self.split == 'train' and not train:
+                        continue
+
+                    if self.split == 'test' and train:
+                        continue
+
+                    self.samples.append(
+                        (
+                            room,
+                            subject,
+                            act,
+                            pos,
+                            direction,
+                            rep,
+                        )
+                    )
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        room, subject, act, pos, direction, rep = self.samples[idx]
+        rx_data = []
+        for rx in self.rx_list:
+            filename = (
+                f'{self.signal}_'
+                f'act{act:02d}_'
+                f'pos{pos:02d}_'
+                f'dir{direction:02d}_'
+                f'rep{rep:02d}.npy'
+            )
+
+            file = os.path.join(
+                self.root_dir,
+                room,
+                self.device,
+                rx,
+                subject,
+                filename,
+            )
+            x = np.load(file)
+            rx_data.append(x)
+
+        x = np.stack(rx_data)
+
+        #
+        # ESP
+        # (3,1,56,1000)
+        #
+        # ASUS
+        # (3,4,56,1000)
+        #
+        x = x.reshape(-1, x.shape[-1])
+
+        #
+        # ESP
+        # (168,1000)
+        #
+        # ASUS
+        # (672,1000)
+        #
+        x = torch.FloatTensor(x)
+        y = act - 1
         return x, y
