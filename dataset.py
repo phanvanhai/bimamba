@@ -87,6 +87,119 @@ class XRF55Dataset(Dataset):
 
         return x, label
 
+def compute_sshar_mean_std(
+    root_dir,
+    device='esp',
+    signal='amp',
+):
+
+    import re
+
+    rooms = [
+        'room_02'
+    ]
+
+    subjects = [
+        'subject_01',
+        'subject_02',
+        'subject_03',
+        'subject_04',
+        'subject_09',
+        'subject_10',
+        'subject_11',
+        'subject_12',
+        'subject_13',
+        'subject_14',
+    ]
+
+    rx_list = [
+        'rx_00',
+        'rx_01',
+        'rx_02',
+    ]
+
+    pattern = re.compile(
+        r'act(\d+)_pos(\d+)_dir(\d+)_rep(\d+)'
+    )
+
+    total_sum = 0.0
+    total_sq = 0.0
+    total_count = 0
+
+    for room in rooms:
+
+        for subject in subjects:
+
+            folder = os.path.join(
+                root_dir,
+                room,
+                device,
+                rx_list[0],
+                subject
+            )
+
+            if not os.path.exists(folder):
+                continue
+
+            for file in os.listdir(folder):
+
+                if not file.startswith(signal):
+                    continue
+
+                m = pattern.search(file)
+
+                if m is None:
+                    continue
+
+                direction = int(m.group(3))
+                rep = int(m.group(4))
+
+                # chỉ TRAIN
+                if direction == 0:
+                    if rep > 8:
+                        continue
+                else:
+                    if rep > 4:
+                        continue
+
+                rx_data = []
+
+                for rx in rx_list:
+
+                    f = os.path.join(
+                        root_dir,
+                        room,
+                        device,
+                        rx,
+                        subject,
+                        file
+                    )
+
+                    x = np.load(f).astype(np.float32)
+
+                    rx_data.append(x)
+
+                x = np.stack(rx_data)
+
+                x = x.reshape(-1)
+
+                total_sum += x.sum()
+
+                total_sq += np.square(x).sum()
+
+                total_count += x.size
+
+    mean = total_sum / total_count
+
+    std = np.sqrt(
+        total_sq / total_count - mean ** 2
+    )
+
+    print(f"SSHAR mean = {mean:.6f}")
+    print(f"SSHAR std  = {std:.6f}")
+
+    return mean, std
+
 class SSHARDataset(Dataset):
     def __init__(
         self,

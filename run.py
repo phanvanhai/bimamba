@@ -9,6 +9,7 @@ from dataset import (
     UT_HAR_dataset,
     XRF55Dataset,
     SSHARDataset,
+    compute_sshar_statistics,
 )
 import gc
 
@@ -75,20 +76,30 @@ def main(args):
         kernel_size = 5
         groups = 15
     elif args.dataset == 'SSHAR':
+        root_dir = '/kaggle/input/datasets/phanvanhai/csi-room-02-0707'
+        mean, std = compute_sshar_statistics(
+            root_dir=root_dir,
+            device='esp',
+            signal='amp'
+        )
         train_dataset = SSHARDataset(
-            root_dir='/kaggle/input/datasets/phanvanhai/csi-room-02-0707',
+            root_dir=root_dir,
             device='esp',
             signal='amp',
             split='train',
+            mean=mean,
+            std=std,
         )
+
         test_dataset = SSHARDataset(
-            root_dir='/kaggle/input/datasets/phanvanhai/csi-room-02-0707',
+            root_dir=root_dir,
             device='esp',
             signal='amp',
             split='test',
+            mean=mean,
+            std=std,
         )
         
-
         depth = 8
         channels = 1000
         kernel_size = 5
