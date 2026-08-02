@@ -9,7 +9,7 @@ from dataset import (
     UT_HAR_dataset,
     XRF55Dataset,
     SSHARDataset,
-    compute_sshar_statistics,
+    compute_sshar_mean_std
 )
 import gc
 
@@ -77,7 +77,7 @@ def main(args):
         groups = 15
     elif args.dataset == 'SSHAR':
         root_dir = '/kaggle/input/datasets/phanvanhai/csi-room-02-0707'
-        mean, std = compute_sshar_statistics(
+        mean, std = compute_sshar_mean_std(
             root_dir=root_dir,
             device='esp',
             signal='amp'
@@ -99,7 +99,7 @@ def main(args):
             mean=mean,
             std=std,
         )
-        
+
         depth = 8
         channels = 1000
         kernel_size = 5
