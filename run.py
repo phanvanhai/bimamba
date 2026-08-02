@@ -67,11 +67,11 @@ def main(args):
         print(x.shape)
 
         depth = 8
-        embed_dim = 342
-        channels = 500
+        embed_dim = 270
+        channels = 1000
         num_classes = 11
-        in_channels = 342
-        out_channels = 342
+        in_channels = 270
+        out_channels = 270
         kernel_size = 5
         groups = 19
     elif args.dataset == 'SSHAR':
