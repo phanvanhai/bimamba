@@ -71,7 +71,7 @@ def main(args):
         in_channels = 342
         out_channels = 342
         kernel_size = 5
-        groups = 3
+        groups = 19
     elif args.dataset == 'SSHAR':
         train_dataset = SSHARDataset(
             root_dir='/kaggle/input/datasets/phanvanhai/csi-room-02-0707',
@@ -89,7 +89,7 @@ def main(args):
 
         depth = 8
         channels = 1000
-        groups = 3
+        groups = 19
         kernel_size = 5
 
         # esp
@@ -102,7 +102,7 @@ def main(args):
         # embed_dim = 672
         # in_channels = 672
         # out_channels = 672
-        # groups = 12
+        # groups = 19
     else:
         raise ValueError("Unsupported dataset. Choose either 'NTU' or 'UT'.")
 
