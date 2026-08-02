@@ -5,6 +5,7 @@ import scipy.io as sio
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import os
+import tqdm
 
 def UT_HAR_dataset(root_dir):
     data_list = glob.glob(root_dir + '/UT_HAR/data/*.csv')
