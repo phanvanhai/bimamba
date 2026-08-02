@@ -61,7 +61,7 @@ class XRF55Dataset(Dataset):
             self.label_file = root_dir + '/dml_train.txt'
         else:
             self.data_dir = root_dir + '/test_data'
-            self.label_file = root_dir + '/dml_test.txt'
+            self.label_file = root_dir + '/dml_val.txt'
         self.samples = []
 
         with open(self.label_file, 'r') as f:
