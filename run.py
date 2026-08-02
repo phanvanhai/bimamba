@@ -77,7 +77,7 @@ def main(args):
             std=std,
         )
 
-        depth = 8
+        depth = 2
         embed_dim = 270
         channels = 1000
         num_classes = 11
