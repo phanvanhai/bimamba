@@ -70,6 +70,12 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
                 labels = labels.type(torch.LongTensor)
 
                 outputs = model(inputs)
+
+                print(torch.isnan(outputs).any())
+                print(outputs.min().item())
+                print(outputs.max().item())
+                exit()
+
                 outputs = outputs.to(device)
                 outputs = outputs.type(torch.FloatTensor)
                 loss = criterion(outputs, labels)
@@ -159,21 +165,22 @@ def val(model, tensor_loader, criterion, device):
     model.eval()
     test_acc = 0
     test_loss = 0
-    for data in tqdm(tensor_loader, desc="Testing"):
-        inputs, labels = data
-        inputs = inputs.to(device)
-        labels.to(device)
-        labels = labels.type(torch.LongTensor)
+    with torch.no_grad():
+        for data in tqdm(tensor_loader, desc="Testing"):
+            inputs, labels = data
+            inputs = inputs.to(device)
+            labels.to(device)
+            labels = labels.type(torch.LongTensor)
 
-        outputs = model(inputs)
-        outputs = outputs.type(torch.FloatTensor)
-        outputs.to(device)
+            outputs = model(inputs)
+            outputs = outputs.type(torch.FloatTensor)
+            outputs.to(device)
 
-        loss = criterion(outputs, labels)
-        predict_y = torch.argmax(outputs, dim=1).to(device)
-        accuracy = (predict_y == labels.to(device)).sum().item() / labels.size(0)
-        test_acc += accuracy
-        test_loss += loss.item() * inputs.size(0)
+            loss = criterion(outputs, labels)
+            predict_y = torch.argmax(outputs, dim=1).to(device)
+            accuracy = (predict_y == labels.to(device)).sum().item() / labels.size(0)
+            test_acc += accuracy
+            test_loss += loss.item() * inputs.size(0)
     
     test_acc = test_acc / len(tensor_loader)
     test_loss = test_loss / len(tensor_loader.dataset)

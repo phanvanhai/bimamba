@@ -66,6 +66,15 @@ def main(args):
             split='test'
         )
 
+        x, y = train_dataset[0]
+        print(x.shape)
+        print(x.dtype)
+        print(x.min(), x.max())
+        print(torch.isnan(x).any())
+        print(torch.isinf(x).any())
+
+        exit()
+
         depth = 8
         embed_dim = 270
         channels = 1000
@@ -151,7 +160,7 @@ def main(args):
         tensor_loader=train_loader,
         val_loader=test_loader,
         num_epochs=train_epoch,
-        learning_rate=1e-4 if args.dataset == 'NTU' else 1e-3,
+        learning_rate=1e-4 if args.dataset == 'NTU-Fi_HAR' else 1e-3,
         criterion=criterion,
         device=device
     )
@@ -160,12 +169,6 @@ def main(args):
     torch.cuda.empty_cache()
 
     test(
-        model=fusion_model,
-        tensor_loader=test_loader,
-        criterion=criterion,
-        device=device
-    )
-    val(
         model=fusion_model,
         tensor_loader=test_loader,
         criterion=criterion,
