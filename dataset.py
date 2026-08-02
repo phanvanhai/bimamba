@@ -94,11 +94,17 @@ class SSHARDataset(Dataset):
         device='esp',
         signal='amp',
         split='train',
+        mean=None,
+        std=None,
     ):
         self.root_dir = root_dir
         self.device = device
         self.signal = signal
         self.split = split
+
+        self.mean = mean
+        self.std = std
+
         self.rooms = [
             'room_02'
         ]
@@ -202,27 +208,20 @@ class SSHARDataset(Dataset):
                 subject,
                 filename,
             )
-            x = np.load(file)
+            x = np.load(file).astype(np.float32)
             rx_data.append(x)
 
-        x = np.stack(rx_data)
+        # ESP:  (3,1,56,1000)
+        # ASUS: (3,4,56,1000)
+        x = np.stack(rx_data).astype(np.float32)
 
-        #
-        # ESP
-        # (3,1,56,1000)
-        #
-        # ASUS
-        # (3,4,56,1000)
-        #
+        # ESP : (3,1,56,1000)
+        # ASUS: (3,4,56,1000)
         x = x.reshape(-1, x.shape[-1])
+        # ---------- Normalize ----------
+        if self.mean is not None and self.std is not None:
+            x = (x - self.mean) / (self.std + 1e-8)
 
-        #
-        # ESP
-        # (168,1000)
-        #
-        # ASUS
-        # (672,1000)
-        #
-        x = torch.FloatTensor(x)
+        x = torch.from_numpy(x).float()
         y = act - 1
         return x, y

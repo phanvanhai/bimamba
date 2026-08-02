@@ -31,7 +31,7 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
         epoch_accuracy = 0
         epoch_f1_scores = []
 
-        for data in tqdm(tensor_loader, desc=f"Epoch {epoch + 1}/{num_epochs}"):
+        for  batch_idx, data in enumerate(tqdm(tensor_loader, desc=f"Epoch {epoch + 1}/{num_epochs}")):
             inputs, labels = data
             inputs = inputs.to(device)
             labels = labels.to(device)
@@ -44,15 +44,19 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
             loss = criterion(outputs, labels)
 
             if torch.isnan(loss):
-                print(f"NaN at epoch {epoch+1}")
-                for name, p in model.named_parameters():
-                    if p.grad is not None:
-                        if torch.isnan(p.grad).any():
-                            print("NaN grad:", name)
-                        if torch.isinf(p.grad).any():
-                            print("Inf grad:", name)
-                    if torch.isnan(p).any():
-                        print("NaN weight:", name)
+                print("=" * 80)
+                print("NaN detected")
+                print("Epoch :", epoch + 1)
+                print("Batch :", batch_idx)
+
+                print("Input")
+                print(inputs.min().item(), inputs.max().item())
+                print(torch.isnan(inputs).any())
+
+                print("Output")
+                print(outputs.min().item(), outputs.max().item())
+                print(torch.isnan(outputs).any())
+
                 raise RuntimeError("Stop")
             
             loss.backward()
