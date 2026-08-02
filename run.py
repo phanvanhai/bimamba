@@ -66,15 +66,6 @@ def main(args):
             split='test'
         )
 
-        x, y = train_dataset[0]
-        print(x.shape)
-        print(x.dtype)
-        print(x.min(), x.max())
-        print(torch.isnan(x).any())
-        print(torch.isinf(x).any())
-
-        exit()
-
         depth = 8
         embed_dim = 270
         channels = 1000
