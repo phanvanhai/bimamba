@@ -63,6 +63,8 @@ def main(args):
             root_dir=test_root_dir,
             split='test'
         )
+        x, y = train_dataset[0]
+        print(x.shape)
 
         depth = 8
         embed_dim = 342
