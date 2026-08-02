@@ -111,25 +111,26 @@ def test(model, tensor_loader, criterion, device):
     test_loss = 0
     test_f1_scores = []
 
-    for data in tqdm(tensor_loader, desc="Testing"):
-        inputs, labels = data
-        inputs = inputs.to(device)
-        labels = labels.to(device)
-        labels = labels.type(torch.LongTensor)
+    with torch.no_grad():
+        for data in tqdm(tensor_loader, desc="Testing"):
+            inputs, labels = data
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            labels = labels.type(torch.LongTensor)
 
-        outputs = model(inputs)
-        outputs = outputs.type(torch.FloatTensor)
-        outputs.to(device)
+            outputs = model(inputs)
+            outputs = outputs.type(torch.FloatTensor)
+            outputs.to(device)
 
-        loss = criterion(outputs, labels)
-        predict_y = torch.argmax(outputs, dim=1).to(device)
-        accuracy = (predict_y == labels.to(device)).sum().item() / labels.size(0)
-        test_acc += accuracy
-        test_loss += loss.item() * inputs.size(0)
+            loss = criterion(outputs, labels)
+            predict_y = torch.argmax(outputs, dim=1).to(device)
+            accuracy = (predict_y == labels.to(device)).sum().item() / labels.size(0)
+            test_acc += accuracy
+            test_loss += loss.item() * inputs.size(0)
 
-        # Calculate F1 score for the current batch
-        f1 = f1_score(labels.cpu(), predict_y.cpu(), average='weighted')
-        test_f1_scores.append(f1)
+            # Calculate F1 score for the current batch
+            f1 = f1_score(labels.cpu(), predict_y.cpu(), average='weighted')
+            test_f1_scores.append(f1)
 
     test_acc = test_acc / len(tensor_loader)
     test_loss = test_loss / len(tensor_loader.dataset)

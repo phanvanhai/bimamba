@@ -10,6 +10,8 @@ from dataset import (
     XRF55Dataset,
     SSHARDataset,
 )
+import gc
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -63,8 +65,6 @@ def main(args):
             root_dir=test_root_dir,
             split='test'
         )
-        x, y = train_dataset[0]
-        print(x.shape)
 
         depth = 8
         embed_dim = 270
@@ -155,6 +155,10 @@ def main(args):
         criterion=criterion,
         device=device
     )
+
+    gc.collect()
+    torch.cuda.empty_cache()
+
     test(
         model=fusion_model,
         tensor_loader=test_loader,
