@@ -59,8 +59,7 @@ def main(args):
         root_dir = '/kaggle/input/datasets/phanvanhai/xrf55-s1-bd/XRF_dataset'
 
         mean, std = compute_xrf55_statistics(
-            file_path=root_dir,
-            scene="dml",
+            root_dir=root_dir
         )
 
         train_dataset = XRF55Dataset(
