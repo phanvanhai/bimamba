@@ -52,8 +52,8 @@ def main(args):
         kernel_size = 5
         groups = 3
     elif args.dataset == 'XRF55':
-        train_root_dir = './dataset/XRF_dataset'
-        test_root_dir = './dataset/XRF_dataset'
+        train_root_dir = '/kaggle/input/datasets/phanvanhai/xrf55-s1-bd/XRF_dataset'
+        test_root_dir = '/kaggle/input/datasets/phanvanhai/xrf55-s1-bd/XRF_dataset'
 
         train_dataset = XRF55Dataset(
             root_dir=train_root_dir,
@@ -74,13 +74,13 @@ def main(args):
         groups = 3
     elif args.dataset == 'SSHAR':
         train_dataset = SSHARDataset(
-            root_dir='./dataset/sshar',
+            root_dir='/kaggle/input/datasets/phanvanhai/csi-room-02-0707',
             device='esp',
             signal='amp',
             split='train',
         )
         test_dataset = SSHARDataset(
-            root_dir='./dataset/sshar',
+            root_dir='/kaggle/input/datasets/phanvanhai/csi-room-02-0707',
             device='esp',
             signal='amp',
             split='test',
