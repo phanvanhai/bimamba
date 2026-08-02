@@ -9,7 +9,8 @@ from dataset import (
     UT_HAR_dataset,
     XRF55Dataset,
     SSHARDataset,
-    compute_sshar_mean_std
+    compute_sshar_mean_std,
+    compute_xrf55_statistics
 )
 import gc
 
@@ -58,13 +59,22 @@ def main(args):
         train_root_dir = '/kaggle/input/datasets/phanvanhai/xrf55-s1-bd/XRF_dataset'
         test_root_dir = '/kaggle/input/datasets/phanvanhai/xrf55-s1-bd/XRF_dataset'
 
+        mean, std = compute_xrf55_statistics(
+            file_path=root_dir,
+            scene="dml",
+        )
+
         train_dataset = XRF55Dataset(
             root_dir=train_root_dir,
-            split='train'
+            split='train',
+            mean=mean,
+            std=std,
         )
         test_dataset = XRF55Dataset(
             root_dir=test_root_dir,
-            split='test'
+            split='test',
+            mean=mean,
+            std=std,
         )
 
         depth = 8

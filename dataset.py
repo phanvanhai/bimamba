@@ -52,8 +52,52 @@ class NTU_HAR_Dataset(Dataset):
         x = torch.FloatTensor(x)
         return x, y
 
+def compute_xrf55_statistics(root_dir):
+    """
+    Compute global mean/std from XRF55 TRAIN set only.
+    """
+
+    dataset = XRF55Dataset(
+        root_dir=root_dir,
+        split='train',
+        mean=None,
+        std=None,
+    )
+
+    total_sum = 0.0
+    total_sq_sum = 0.0
+    total_count = 0
+
+    print("Computing XRF55 mean/std...")
+
+    for filename, _ in tqdm(dataset.samples):
+
+        file = os.path.join(
+            dataset.data_dir,
+            filename + ".npy"
+        )
+
+        x = np.load(file).astype(np.float32)
+
+        # (270,1000)
+        x = x.reshape(-1, x.shape[-1])
+
+        total_sum += x.sum()
+        total_sq_sum += np.square(x).sum()
+        total_count += x.size
+
+    mean = total_sum / total_count
+
+    var = total_sq_sum / total_count - mean ** 2
+    std = np.sqrt(var)
+
+    print(f"XRF55 mean = {mean:.6f}")
+    print(f"XRF55 std  = {std:.6f}")
+
+    return mean, std
+
 class XRF55Dataset(Dataset):
-    def __init__(self, root_dir, split='train'):
+    def __init__(self, root_dir, split='train', mean=None, std=None,):
         self.root_dir = root_dir
         self.split = split
         if split == 'train':
@@ -72,18 +116,33 @@ class XRF55Dataset(Dataset):
                     int(activity) - 31
                 ))
 
+        self.mean = mean
+        self.std = std
+
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, idx):
         filename, label = self.samples[idx]
-        x = np.load(self.data_dir + '/' + filename + '.npy')
+        x = np.load(self.data_dir + '/' + filename + '.npy').astype(np.float32)
 
         # (3,114,500)
         # ->
         # (342,500)
         x = x.reshape(-1, x.shape[-1])
-        x = torch.FloatTensor(x)
+        if self.mean is not None and self.std is not None:
+            x = (x - self.mean) / (self.std + 1e-8)
+
+        x = torch.from_numpy(x).float()
+
+        # -----------------------------
+        # Adaptive temporal pooling
+        # 500 -> 250
+        # -----------------------------
+        x = F.adaptive_max_pool1d(
+            x,
+            output_size=250
+        )
 
         return x, label
 
@@ -303,14 +362,15 @@ class SSHARDataset(Dataset):
 
     def __getitem__(self, idx):
         room, subject, act, pos, direction, rep = self.samples[idx]
+
         rx_data = []
         for rx in self.rx_list:
             filename = (
-                f'{self.signal}_'
-                f'act{act:02d}_'
-                f'pos{pos:02d}_'
-                f'dir{direction:02d}_'
-                f'rep{rep:02d}.npy'
+                f"{self.signal}_"
+                f"act{act:02d}_"
+                f"pos{pos:02d}_"
+                f"dir{direction:02d}_"
+                f"rep{rep:02d}.npy"
             )
 
             file = os.path.join(
@@ -321,20 +381,38 @@ class SSHARDataset(Dataset):
                 subject,
                 filename,
             )
+
             x = np.load(file).astype(np.float32)
             rx_data.append(x)
 
-        # ESP:  (3,1,56,1000)
-        # ASUS: (3,4,56,1000)
-        x = np.stack(rx_data).astype(np.float32)
+        # --------------------------------------------------
+        # Stack RX
+        # ESP  : (3,1,56,1000)
+        # ASUS : (3,4,56,1000)
+        # --------------------------------------------------
+        x = np.stack(rx_data)
 
-        # ESP : (3,1,56,1000)
-        # ASUS: (3,4,56,1000)
+        # --------------------------------------------------
+        # Merge RX & antenna
+        # ESP  : (168,1000)
+        # ASUS : (672,1000)
+        # --------------------------------------------------
         x = x.reshape(-1, x.shape[-1])
-        # ---------- Normalize ----------
+
+        # --------------------------------------------------
+        # Global normalization
+        # --------------------------------------------------
         if self.mean is not None and self.std is not None:
             x = (x - self.mean) / (self.std + 1e-8)
-
         x = torch.from_numpy(x).float()
+
+        # --------------------------------------------------
+        # Adaptive temporal pooling
+        # 1000 -> 250
+        # --------------------------------------------------
+        x = F.adaptive_max_pool1d(
+            x,
+            output_size=250
+        )
         y = act - 1
         return x, y
