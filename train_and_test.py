@@ -24,6 +24,7 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
     num_samples = len(tensor_loader.dataset)
     indices = list(range(num_samples))
 
+    best_acc = 0
     for epoch in range(num_epochs):
         model.train()
         epoch_loss = 0
@@ -44,7 +45,15 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
 
             if torch.isnan(loss):
                 print(f"NaN at epoch {epoch+1}")
-                break
+                for name, p in model.named_parameters():
+                    if p.grad is not None:
+                        if torch.isnan(p.grad).any():
+                            print("NaN grad:", name)
+                        if torch.isinf(p.grad).any():
+                            print("Inf grad:", name)
+                    if torch.isnan(p).any():
+                        print("NaN weight:", name)
+                raise RuntimeError("Stop")
             
             loss.backward()
             optimizer.step()
@@ -64,6 +73,8 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
 
         epoch_loss = epoch_loss / len(tensor_loader.dataset)
         epoch_accuracy = epoch_accuracy / len(tensor_loader)
+        if len(epoch_f1_scores) == 0:
+            raise RuntimeError("Training stopped because loss became NaN.")
         epoch_f1_score = sum(epoch_f1_scores) / len(epoch_f1_scores)
 
         # 验证阶段
@@ -95,6 +106,18 @@ def train(model, tensor_loader, val_loader, num_epochs, learning_rate, criterion
         val_loss = val_loss / len(val_loader.dataset)
         val_accuracy = val_accuracy / len(val_loader)
         val_f1_score = sum(val_f1_scores) / len(val_f1_scores)
+
+        if val_accuracy > best_acc:
+            best_acc = val_accuracy
+            torch.save(
+                model.state_dict(),
+                "best_model.pth"
+            )
+            print(
+                f"Best model saved "
+                f"(epoch {epoch+1}, "
+                f"val_acc={best_acc:.4f})"
+            )
 
         log = (
             f'Epoch [{epoch + 1}/{num_epochs}] | '

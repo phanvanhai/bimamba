@@ -159,6 +159,9 @@ def main(args):
     gc.collect()
     torch.cuda.empty_cache()
 
+    fusion_model.load_state_dict(
+        torch.load("best_model.pth")
+    )
     test(
         model=fusion_model,
         tensor_loader=test_loader,
