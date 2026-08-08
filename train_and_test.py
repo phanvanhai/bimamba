@@ -81,12 +81,10 @@ def train(
                 print("NaN   :", torch.isnan(outputs).any().item())
 
                 for name, p in model.named_parameters():
-
                     if torch.isnan(p).any():
                         print(f"NaN weight : {name}")
 
                     if p.grad is not None:
-
                         if torch.isnan(p.grad).any():
                             print(f"NaN grad   : {name}")
 
@@ -97,29 +95,18 @@ def train(
 
             loss.backward()
 
-            # Uncomment nếu muốn dùng gradient clipping
-            # torch.nn.utils.clip_grad_norm_(
-            #     model.parameters(),
-            #     max_norm=1.0
-            # )
-
             optimizer.step()
-
             # kiểm tra weight sau khi update
             for name, p in model.named_parameters():
-
                 if torch.isnan(p).any():
                     print(f"NaN weight after optimizer.step(): {name}")
                     raise RuntimeError("Weight became NaN.")
 
             epoch_loss += loss.item() * inputs.size(0)
-
             predict_y = torch.argmax(outputs, dim=1)
-
             epoch_accuracy += (
                 (predict_y == labels).sum().item() / labels.size(0)
             )
-
             epoch_f1_scores.append(
                 f1_score(
                     labels.cpu().numpy(),
@@ -142,24 +129,18 @@ def train(
         val_f1_scores = []
 
         with torch.no_grad():
-
             for inputs, labels in val_loader:
-
                 inputs = inputs.to(device, non_blocking=True)
                 labels = labels.long().to(device, non_blocking=True)
 
                 outputs = model(inputs)
-
                 loss = criterion(outputs, labels)
-
                 val_loss += loss.item() * inputs.size(0)
-
                 predict_y = torch.argmax(outputs, dim=1)
 
                 val_accuracy += (
                     (predict_y == labels).sum().item() / labels.size(0)
                 )
-
                 val_f1_scores.append(
                     f1_score(
                         labels.cpu().numpy(),
@@ -176,9 +157,7 @@ def train(
         # Save best model
         # ===========================
         if val_accuracy > best_acc:
-
             best_acc = val_accuracy
-
             torch.save(
                 model.state_dict(),
                 "best_model.pth",
@@ -189,7 +168,6 @@ def train(
                 f"(Epoch {epoch+1}, "
                 f"Val Acc = {best_acc:.4f})"
             )
-
         log = (
             f"Epoch [{epoch+1}/{num_epochs}] | "
             f"Train Loss: {epoch_loss:.9f} | "
@@ -201,14 +179,11 @@ def train(
         )
 
         print(log)
-
         with open(log_file, "a", encoding="utf-8") as f:
             f.write(log + "\n")
-
         print(f"\nTraining log saved to: {os.path.abspath(log_file)}")
 
 def test(model, tensor_loader, criterion, device):
-
     model.eval()
 
     test_acc = 0.0
@@ -216,16 +191,12 @@ def test(model, tensor_loader, criterion, device):
     test_f1_scores = []
 
     with torch.no_grad():
-
         for inputs, labels in tqdm(tensor_loader, desc="Testing"):
-
             inputs = inputs.to(device, non_blocking=True)
             labels = labels.long().to(device, non_blocking=True)
-
             outputs = model(inputs)
 
             loss = criterion(outputs, labels)
-
             predict_y = torch.argmax(outputs, dim=1)
 
             accuracy = (
@@ -275,23 +246,19 @@ def val(model, tensor_loader, criterion, device):
     test_loss = 0.0
 
     with torch.no_grad():
-
         for inputs, labels in tqdm(tensor_loader, desc="Validation"):
-
             inputs = inputs.to(device, non_blocking=True)
+
             labels = labels.long().to(device, non_blocking=True)
 
             outputs = model(inputs)
-
             loss = criterion(outputs, labels)
-
             predict_y = torch.argmax(outputs, dim=1)
 
             accuracy = (
                 (predict_y == labels).sum().item()
                 / labels.size(0)
             )
-
             test_acc += accuracy
             test_loss += loss.item() * inputs.size(0)
 

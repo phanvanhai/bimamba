@@ -154,7 +154,6 @@ def compute_sshar_mean_std(
 ):
 
     import re
-
     rooms = [
         'room_02'
     ]
